@@ -3,26 +3,29 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-/// CPU-based fuzzy animated background with soft bouncing circles.
+/// CPU-based fuzzy animated background with soft bouncing circles and smooth falloff.
 class CirclesBackground extends StatefulWidget {
   const CirclesBackground({
     super.key,
-    this.circleCount = 3,
-    this.radiusRange = const RangeValues(50, 150),
+    this.circleCount = 5,
+    this.radiusRange = const RangeValues(50, 180),
     this.softness = 80,
     this.speed = 5,
     this.parallaxScale = 2.0,
-    this.intensity = 1,
+    this.intensity = 1.7,
     this.colors = const [
-      Colors.pinkAccent,
+      Colors.orange,
       Colors.cyanAccent,
       Colors.purpleAccent,
+      Colors.blue
     ],
     this.backgroundColor = Colors.transparent,
     this.child,
     this.seed,
     this.driftStrength = 0.15,
     this.bounceDamping = 0.98,
+    this.falloff = 1.6,
+    this.spacingFactor = 1.2,
   });
 
   final int circleCount;
@@ -35,12 +38,12 @@ class CirclesBackground extends StatefulWidget {
   final Color backgroundColor;
   final Widget? child;
   final int? seed;
-
-  /// How much circles gradually change direction over time (0–0.3 recommended).
   final double driftStrength;
-
-  /// Multiplier applied to velocity on bounce. < 1.0 makes bounces less energetic.
   final double bounceDamping;
+  final double falloff;
+
+  /// Controls how far apart circles start (1.0 = just touching, 1.2–1.5 = spaced out)
+  final double spacingFactor;
 
   @override
   State<CirclesBackground> createState() => _CirclesBackgroundState();
@@ -68,32 +71,63 @@ class _CirclesBackgroundState extends State<CirclesBackground>
   @override
   void initState() {
     super.initState();
-    _rng = Random(widget.seed ?? DateTime.now().millisecondsSinceEpoch);
+    _rng = Random(widget.seed ?? 42);
     _ticker = createTicker(_tick)..start();
   }
 
   void _initialize(Size size) {
     _screenSize = size;
+    _circles.clear();
+
     final palette = widget.colors.isNotEmpty
         ? widget.colors
         : [Colors.pinkAccent, Colors.cyanAccent, Colors.purpleAccent];
 
-    _circles = List.generate(widget.circleCount, (_) {
+    // Greedy spaced initialization
+    int maxAttempts = 2000;
+    for (int i = 0; i < widget.circleCount; i++) {
       final depth = pow(_rng.nextDouble(), 2.0).toDouble();
       final r = ui.lerpDouble(
         widget.radiusRange.start,
         widget.radiusRange.end,
         _rng.nextDouble(),
       )!;
-      final pos = Offset(
-        _rng.nextDouble() * size.width,
-        _rng.nextDouble() * size.height,
-      );
       final angle = _rng.nextDouble() * 2 * pi;
       final velocity = Offset(cos(angle), sin(angle));
       final color = palette[_rng.nextInt(palette.length)];
-      return _Circle(pos, velocity, r, depth, color, angle);
-    });
+
+      Offset? pos;
+      int attempt = 0;
+
+      while (attempt++ < maxAttempts) {
+        final candidate = Offset(
+          _rng.nextDouble() * size.width,
+          _rng.nextDouble() * size.height,
+        );
+
+        bool farEnough = true;
+        for (final c in _circles) {
+          final minDist = (r + c.radius) * widget.spacingFactor;
+          if ((candidate - c.position).distance < minDist) {
+            farEnough = false;
+            break;
+          }
+        }
+
+        if (farEnough) {
+          pos = candidate;
+          break;
+        }
+      }
+
+      // If couldn't find good spaced position, fallback to random
+      pos ??= Offset(
+        _rng.nextDouble() * size.width,
+        _rng.nextDouble() * size.height,
+      );
+
+      _circles.add(_Circle(pos, velocity, r, depth, color, angle));
+    }
   }
 
   void _tick(Duration elapsed) {
@@ -108,7 +142,7 @@ class _CirclesBackgroundState extends State<CirclesBackground>
     final height = _screenSize.height;
 
     for (final c in _circles) {
-      // Slight drift for natural motion
+      // Smooth directional drift
       c.angle += (_rng.nextDouble() - 0.5) * widget.driftStrength * dt;
       c.velocity = Offset(cos(c.angle), sin(c.angle));
 
@@ -142,7 +176,7 @@ class _CirclesBackgroundState extends State<CirclesBackground>
       }
     }
 
-    setState(() {}); // repaint
+    setState(() {});
   }
 
   @override
@@ -166,6 +200,7 @@ class _CirclesBackgroundState extends State<CirclesBackground>
             softness: widget.softness,
             intensity: widget.intensity,
             backgroundColor: widget.backgroundColor,
+            falloff: widget.falloff,
           ),
           child: widget.child,
         );
@@ -179,12 +214,14 @@ class _CirclesPainter extends CustomPainter {
   final double softness;
   final double intensity;
   final Color backgroundColor;
+  final double falloff;
 
   _CirclesPainter({
     required this.circles,
     required this.softness,
     required this.intensity,
     required this.backgroundColor,
+    required this.falloff,
   });
 
   @override
@@ -194,18 +231,23 @@ class _CirclesPainter extends CustomPainter {
 
     for (final c in circles) {
       final r = c.radius + softness;
+
+      // Multi-stop radial gradient for smoother energy falloff
       final gradient = RadialGradient(
         colors: [
-          c.color.withOpacity(0.25 * intensity),
+          c.color.withOpacity(0.15 * intensity),
+          c.color.withOpacity(0.07 * intensity),
           c.color.withOpacity(0.0),
         ],
+        stops: const [0.0, 0.6, 1.0],
       );
+
       paint.shader =
           gradient.createShader(Rect.fromCircle(center: c.position, radius: r));
       canvas.drawCircle(c.position, r, paint);
     }
 
-    // Global blur layer
+    // Global blur for soft diffusion
     canvas.saveLayer(
       Offset.zero & size,
       Paint()
