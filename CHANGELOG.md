@@ -1,3 +1,5 @@
 ## 0.0.1
 
-* Implemented `CirclesBackground`.
+* Implemented `FuzzyCirclesBackground`.
+* Implemented `BloomyOrbsBackground`.
+* Implemented `RaysBackground`.

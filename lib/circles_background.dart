@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 /// CPU-based fuzzy animated background with soft bouncing circles and smooth falloff.
-class CirclesBackground extends StatefulWidget {
-  const CirclesBackground({
+class FuzzyCirclesBackground extends StatefulWidget {
+  const FuzzyCirclesBackground({
     super.key,
     this.circleCount = 5,
     this.radiusRange = const RangeValues(50, 180),
@@ -46,7 +46,7 @@ class CirclesBackground extends StatefulWidget {
   final double spacingFactor;
 
   @override
-  State<CirclesBackground> createState() => _CirclesBackgroundState();
+  State<FuzzyCirclesBackground> createState() => _FuzzyCirclesBackgroundState();
 }
 
 class _Circle {
@@ -60,7 +60,7 @@ class _Circle {
   _Circle(this.position, this.velocity, this.radius, this.depth, this.color, this.angle);
 }
 
-class _CirclesBackgroundState extends State<CirclesBackground>
+class _FuzzyCirclesBackgroundState extends State<FuzzyCirclesBackground>
     with SingleTickerProviderStateMixin {
   List<_Circle> _circles = [];
   late final Random _rng;
