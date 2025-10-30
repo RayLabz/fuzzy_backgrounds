@@ -3,3 +3,5 @@
 * Implemented `FuzzyCirclesBackground`.
 * Implemented `BloomyOrbsBackground`.
 * Implemented `RaysBackground`.
+* Implemented `AuroraBackground`.
+* Impelemnted `FlowFieldBackground`.
