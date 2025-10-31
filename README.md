@@ -19,13 +19,13 @@ Fuzzy backgrounds allows you to use fuzzy, dynamic (fluid) backgrounds in your F
 
 You can choose from several types of backgrounds.
 
-<img src="media/gradient-background.gif" alt="drawing" width="200"/>
-<img src="media/fuzzy-circles.gif" alt="drawing" width="200"/> 
-<img src="media/bloomy-orbs.gif" alt="drawing" width="200"/>
-<img src="media/ribbon.gif" alt="drawing" width="200"/>
-<img src="media/aurora.gif" alt="drawing" width="200"/>
-<img src="media/rays-background.gif" alt="drawing" width="200"/>
-<img src="media/flow-fields.gif" alt="drawing" width="200"/>
+<img src="https://github.com/RayLabz/fuzzy_backgrounds/blob/main/media/gradient-background.gif?raw=true" alt="drawing" width="200"/>
+<img src="https://github.com/RayLabz/fuzzy_backgrounds/blob/main/media/fuzzy-circles.gif?raw=true" alt="drawing" width="200"/> 
+<img src="https://github.com/RayLabz/fuzzy_backgrounds/blob/main/media/bloomy-orbs.gif?raw=true" alt="drawing" width="200"/>
+<img src="https://github.com/RayLabz/fuzzy_backgrounds/blob/main/media/ribbon.gif?raw=true" alt="drawing" width="200"/>
+<img src="https://github.com/RayLabz/fuzzy_backgrounds/blob/main/media/aurora.gif?raw=true" alt="drawing" width="200"/>
+<img src="https://github.com/RayLabz/fuzzy_backgrounds/blob/main/media/rays-background.gif?raw=true" alt="drawing" width="200"/>
+<img src="https://github.com/RayLabz/fuzzy_backgrounds/blob/main/media/flow-fields.gif?raw=true" alt="drawing" width="200"/>
 
 ## Installing
 
@@ -58,4 +58,4 @@ FuzzyCirclesBackground(
 Different backgrounds offer various customization options including animation speed, colors, 
 particle numbers and more.
 
-For more information refer to the [documentation](doc/api/index.html).
+For more information refer to the [documentation](docs/api/index.html).

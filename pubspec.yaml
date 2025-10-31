@@ -1,7 +1,26 @@
 name: fuzzy_backgrounds
 description: "Fuzzy backgrounds for Flutter apps."
 version: 0.0.1
-homepage:
+homepage: https://pub.dev/packages/fuzzy-backgrounds/
+repository: "https://github.com/RayLabz/fuzzy_backgrounds"
+documentation: "https://github.com/RayLabz/fuzzy_backgrounds/docs"
+
+platforms:
+  android:
+  ios:
+  macos:
+  web:
+  windows:
+  linux:
+
+funding:
+  - https://buymeacoffee.com/nkasenides
+
+topics:
+  - ui
+  - background
+  - gradient
+  - animation
 
 environment:
   sdk: ^3.9.2
@@ -10,8 +29,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_audio_capture: ^1.1.11
-  scidart: ^0.0.2-dev.12
 
 dev_dependencies:
   flutter_test:
