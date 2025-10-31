@@ -14,7 +14,6 @@ class FuzzyCirclesBackground extends StatefulWidget {
     this.parallaxScale = 2.0,
     this.intensity = 1.7,
     this.colors = const [
-      Colors.orange,
       Colors.cyanAccent,
       Colors.purpleAccent,
       Colors.blue

@@ -10,10 +10,10 @@ class AuroraBackground extends StatefulWidget {
     this.ribbonCount = 4,
     this.speed = 0.02,
     this.blur = 30.0,
-    this.intensity = 0.8,
+    this.intensity = 2.8,
     this.waveAmplitude = 120.0,
     this.waveLength = 1.2,
-    this.backgroundColor = Colors.black,
+    this.backgroundColor = Colors.transparent,
     this.colors = const [
       Color(0xFF00FFAA),
       Color(0xFF00AFFF),
@@ -26,6 +26,7 @@ class AuroraBackground extends StatefulWidget {
     this.starIntensity = 0.6,
     this.enableStars = false,
     this.enableGradientSky = false,
+    this.backgroundBrightness,
     this.child,
   });
 
@@ -37,6 +38,7 @@ class AuroraBackground extends StatefulWidget {
   final double waveLength;
   final Color backgroundColor;
   final List<Color> colors;
+  final Brightness? backgroundBrightness;
 
   /// Controls how deep the parallax effect appears.
   /// 0 = flat, 1 = very deep, subtle = 0.2–0.4 recommended.
@@ -104,6 +106,7 @@ class _AuroraBackgroundState extends State<AuroraBackground>
         amplitude: widget.waveAmplitude,
         wavelength: widget.waveLength,
         backgroundColor: widget.backgroundColor,
+        backgroundBrightness: widget.backgroundBrightness, // NEW
         colors: widget.colors,
         skyDepth: widget.skyDepth,
         enableStars: widget.enableStars,
@@ -177,6 +180,7 @@ class _AuroraPainter extends CustomPainter {
   final bool enableStars;
   final bool enableGradientSky;
   final Color backgroundColor;
+  final Brightness? backgroundBrightness; // NEW
   final Color starColor;
   final double starIntensity;
   final List<Color> colors;
@@ -196,51 +200,70 @@ class _AuroraPainter extends CustomPainter {
     required this.enableGradientSky,
     required this.starColor,
     required this.starIntensity,
+    this.backgroundBrightness, // NEW
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // Background color fill
-    canvas.drawColor(backgroundColor, BlendMode.srcOver);
+    // Fill background (if non-transparent)
+    if (backgroundColor.opacity > 0) {
+      canvas.drawColor(backgroundColor, BlendMode.srcOver);
+    }
 
-    // Optional gradient nebula sky
+    // Decide luminance mode
+    final isDark = _decideIsDark();
+
+    // Optional nebula wash
     if (enableGradientSky) {
-      final gradient = LinearGradient(
+      final wash = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          backgroundColor,
-          backgroundColor.withOpacity(0.9),
+        colors: isDark
+            ? [
+          backgroundColor.withOpacity(1.0),
+          backgroundColor.withOpacity(0.85),
           backgroundColor.withOpacity(0.6),
+        ]
+            : [
+          backgroundColor.withOpacity(1.0),
+          backgroundColor.withOpacity(0.95),
+          backgroundColor.withOpacity(0.9),
         ],
         stops: const [0.0, 0.5, 1.0],
       );
-      paint.shader = gradient.createShader(Offset.zero & size);
+      paint.shader = wash.createShader(Offset.zero & size);
       canvas.drawRect(Offset.zero & size, paint);
+      paint.shader = null;
     }
 
-    // Optional stars
+    // Stars
     if (enableStars) {
       final starPaint = Paint()
         ..color = starColor
-        ..blendMode = BlendMode.plus;
+        ..blendMode = isDark ? BlendMode.plus : BlendMode.srcOver;
       for (final star in stars) {
         final parallaxY = size.height * (1 - skyDepth * 0.6);
         final dx = star.position.dx * size.width;
         final dy = star.position.dy * parallaxY;
         final twinkle =
             0.5 + 0.5 * sin(time * star.twinkleSpeed + star.twinklePhase);
-        starPaint.color =
-            starColor.withOpacity(star.brightness * twinkle * starIntensity);
+        final alpha = (star.brightness * twinkle * starIntensity)
+            .clamp(0.0, 1.0);
+        starPaint.color = starColor.withOpacity(
+          isDark ? alpha : alpha * 0.6, // tone stars down on light BGs
+        );
         canvas.drawCircle(Offset(dx, dy), 0.8 + star.brightness * 1.5, starPaint);
       }
     }
 
-    // Draw aurora ribbons
+    // Ribbons
     final path = Path();
-    final auroraPaint = Paint()..blendMode = BlendMode.plus;
+    final auroraPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true
+      ..blendMode = isDark ? BlendMode.plus : BlendMode.multiply; // ADAPTIVE
 
     for (int i = 0; i < ribbons.length; i++) {
       final ribbon = ribbons[i];
@@ -248,45 +271,83 @@ class _AuroraPainter extends CustomPainter {
       final colorB = colors[(ribbon.colorIndex + i + 1) % colors.length];
 
       path.reset();
-      final double baseY = ribbon.baseY * size.height;
-      final double stepX = size.width / 40;
-      final double waveAmp = amplitude * ribbon.thickness;
+      final baseY = ribbon.baseY * size.height;
+      final stepX = size.width / 40.0;
+      final waveAmp = amplitude * ribbon.thickness;
 
       path.moveTo(0, baseY);
       for (double x = 0; x <= size.width + stepX; x += stepX) {
-        final yOffset = sin(x / (size.width * wavelength) * 2 * pi +
-            time * 2 * pi * ribbon.speedFactor +
-            ribbon.phase) *
+        final yOffset = sin(
+          x / (size.width * wavelength) * 2 * pi +
+              time * 2 * pi * ribbon.speedFactor +
+              ribbon.phase,
+        ) *
             waveAmp;
         path.lineTo(x, baseY + yOffset);
       }
-      path.lineTo(size.width, size.height);
-      path.lineTo(0, size.height);
-      path.close();
+      path
+        ..lineTo(size.width, size.height)
+        ..lineTo(0, size.height)
+        ..close();
+
+      // ADAPT the gradient’s brightness/opacity for light backgrounds
+      final double aTop = (isDark ? 0.28 : 0.35) * intensity;
+      final double aMid = (isDark ? 0.16 : 0.28) * intensity;
+
+      final hsvA = HSVColor.fromColor(colorA);
+      final hsvB = HSVColor.fromColor(colorB);
+
+      final Color adjA = (isDark
+          ? hsvA
+          : hsvA.withValue((hsvA.value * 0.75).clamp(0.0, 1.0)))
+          .toColor()
+          .withOpacity(aTop);
+      final Color adjB = (isDark
+          ? hsvB
+          : hsvB.withValue((hsvB.value * 0.75).clamp(0.0, 1.0)))
+          .toColor()
+          .withOpacity(aMid);
 
       final gradient = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          colorA.withOpacity(0.28 * intensity),
-          colorB.withOpacity(0.16 * intensity),
+          adjA,
+          adjB,
           Colors.transparent,
         ],
-        stops: const [0.0, 0.5, 1.0],
+        stops: const [0.0, 0.55, 1.0],
       );
 
       auroraPaint.shader = gradient.createShader(Offset.zero & size);
       canvas.drawPath(path, auroraPaint);
     }
 
-    // Blur to merge ribbons softly
-    canvas.saveLayer(
-      Offset.zero & size,
-      Paint()
-        ..blendMode = BlendMode.screen
-        ..imageFilter = ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-    );
-    canvas.restore();
+    // BLUR pass – strong on dark, minimal on light to avoid washout
+    final blurSigma = isDark ? blur : (blur * 0.25);
+    final layerBlend = isDark ? BlendMode.screen : BlendMode.srcOver;
+
+    if (blurSigma > 0.5) {
+      canvas.saveLayer(
+        Offset.zero & size,
+        Paint()
+          ..blendMode = layerBlend
+          ..imageFilter = ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+      );
+      canvas.restore();
+    }
+  }
+
+  bool _decideIsDark() {
+    if (backgroundBrightness != null) {
+      return backgroundBrightness == Brightness.dark;
+    }
+    // Infer from backgroundColor if it has visible alpha; otherwise assume light.
+    final hasBg = backgroundColor.opacity > 0.01;
+    final luma = 0.2126 * (backgroundColor.red / 255.0) +
+        0.7152 * (backgroundColor.green / 255.0) +
+        0.0722 * (backgroundColor.blue / 255.0);
+    return hasBg ? (luma < 0.45) : false; // transparent -> default to light
   }
 
   @override
