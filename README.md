@@ -15,6 +15,13 @@ and the Flutter guide for
 
 Fuzzy backgrounds allows you to use fuzzy, dynamic (fluid) backgrounds in your Flutter applications.
 
+[![pub package](https://img.shields.io/pub/v/fuzzy_backgrounds.svg)](https://pub.dev/packages/fuzzy_backgrounds)
+[![GitHub issues](https://img.shields.io/github/issues/RayLabz/fuzzy_backgrounds.svg)]()
+![GitHub stars](https://img.shields.io/github/stars/RayLabz/fuzzy_backgrounds.svg?style=social&label=Star)
+![GitHub license](https://img.shields.io/github/license/RayLabz/fuzzy_backgrounds.svg)
+
+---
+
 ## Features
 
 You can choose from several types of backgrounds.

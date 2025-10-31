@@ -1,9 +1,9 @@
 name: fuzzy_backgrounds
 description: "Fuzzy backgrounds for Flutter apps."
 version: 0.0.1
-homepage: https://pub.dev/packages/fuzzy-backgrounds/
+homepage: https://pub.dev/packages/fuzzy_backgrounds/
 repository: "https://github.com/RayLabz/fuzzy_backgrounds"
-documentation: "https://github.com/RayLabz/fuzzy_backgrounds/docs"
+documentation: "https://raylabz.github.io/fuzzy_backgrounds/api"
 
 platforms:
   android:
@@ -17,10 +17,10 @@ funding:
   - https://buymeacoffee.com/nkasenides
 
 topics:
-  - ui
   - background
   - gradient
   - animation
+  - dynamic
 
 environment:
   sdk: ^3.9.2
