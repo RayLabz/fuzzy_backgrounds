@@ -108,7 +108,6 @@ class _SmoothCausticsPainter extends CustomPainter {
     // Use an offscreen recorder to composite continuous field
     final recorder = ui.PictureRecorder();
     final offCanvas = Canvas(recorder);
-    final path = Path();
     final step = 3.0;
 
     // Evaluate pattern in a dense grid to avoid "orbs"
