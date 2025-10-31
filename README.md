@@ -11,29 +11,51 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/to/develop-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+# Fuzzy Backgrounds
+
+Fuzzy backgrounds allows you to use fuzzy, dynamic (fluid) backgrounds in your Flutter applications.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+You can choose from several types of backgrounds.
 
-## Getting started
+<img src="media/gradient-background.gif" alt="drawing" width="200"/>
+<img src="media/fuzzy-circles.gif" alt="drawing" width="200"/> 
+<img src="media/bloomy-orbs.gif" alt="drawing" width="200"/>
+<img src="media/ribbon.gif" alt="drawing" width="200"/>
+<img src="media/aurora.gif" alt="drawing" width="200"/>
+<img src="media/rays-background.gif" alt="drawing" width="200"/>
+<img src="media/flow-fields.gif" alt="drawing" width="200"/>
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+## Installing
+
+To get started, install `fuzzy_backgrounds`:
+
+```shell
+flutter pub add fuzzy_backgrounds
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+You can use different types of backgrounds in your code by including the widgets
+and wrapping your content as their `child` property:
 
 ```dart
-const like = 'sample';
+FuzzyCirclesBackground(
+    child: const Text(
+      'Circles Background',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+),
 ```
 
-## Additional information
+## Customization
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Different backgrounds offer various customization options including animation speed, colors, 
+particle numbers and more.
+
+For more information refer to the [documentation](doc/api/index.html).
