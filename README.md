@@ -65,4 +65,4 @@ FuzzyCirclesBackground(
 Different backgrounds offer various customization options including animation speed, colors, 
 particle numbers and more.
 
-For more information refer to the [documentation](docs/api/index.html).
+For more information refer to the [documentation](https://raylabz.github.io/fuzzy_backgrounds/api).
